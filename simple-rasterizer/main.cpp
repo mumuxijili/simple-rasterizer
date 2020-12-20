@@ -171,12 +171,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // TODO: Add any drawing code that uses hdc here...
 			BITMAPINFO bmpInfo = { 0 };
 			bmpInfo.bmiHeader.biBitCount = 32;
+			bmpInfo.bmiHeader.biCompression = BI_RGB;
 			bmpInfo.bmiHeader.biWidth = g_winWidth;
-			bmpInfo.bmiHeader.biHeight = g_winHeight;
+			bmpInfo.bmiHeader.biHeight = g_winHeight; // WARNING
 			bmpInfo.bmiHeader.biPlanes = 1;
 			bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 
-			//hdc = GetDC(hWnd);
 			HDC compatibleDC = CreateCompatibleDC(hdc);
 			HBITMAP mBitmap = CreateCompatibleBitmap(hdc, g_winWidth, g_winHeight);
 
@@ -186,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			clock_t stop = clock();//paint end clock
 
-			SetDIBits(compatibleDC, mBitmap, 0, g_winHeight, frameBuffer, &bmpInfo, DIB_PAL_COLORS);
+			SetDIBits(compatibleDC, mBitmap, 0, g_winHeight, frameBuffer, &bmpInfo, DIB_RGB_COLORS);
 			SelectObject(compatibleDC, mBitmap);
 			//calculate fps
 			double dur = (double)(stop - start) / (double)CLOCKS_PER_SEC;
@@ -194,7 +194,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// draw fps
 			char fpsstr[32];
 			sprintf_s(fpsstr, "FPS: %d", fps);
-			drawLabel(compatibleDC, fpsstr, 1);
+			drawFps(compatibleDC, fpsstr, 1);
 
 			// draw bitmap
 			BitBlt(hdc, 0, 0, g_winWidth, g_winHeight, compatibleDC, 0, 0, SRCCOPY);

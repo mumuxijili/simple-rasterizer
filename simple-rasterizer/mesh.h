@@ -4,6 +4,7 @@ class Vertex
 {
 public:
 	Vertex() {};
+	Vertex(Vec4 pos, DWORD color) : m_vertexPos(pos), m_vertexColor(color) { m_SSCoord = m_vertexPos; } // WARNING model and world in the same coordinate system.
 	~Vertex() {};
 
 	Vec4 m_vertexPos;
@@ -13,18 +14,10 @@ public:
 	Vec4 m_SSCoord; // Screen Space Coordinate, with depth
 };
 
-class Triangle
+struct Triangle
 {
-public:
-	Triangle() {};
-	~Triangle() {};
-
-	Vertex m_v0, m_v1, m_v2;
-	//Vec4 m_n0, m_n1, m_n2;
-	//Vec4 m_c0, m_c1, m_c2;
-
+	Vertex v0, v1, v2;
 };
-
 
 class Mesh
 {
@@ -38,11 +31,12 @@ public:
 	vector<UINT> m_vMeshIndices;
 
 	void resizeVertices(int vertexCount);
-	void resizeIndices(int IDtriCount) {
+	void resizeIndices(int IDtriCount)
+	{
 		m_vMeshIndices.resize(IDtriCount);
-
 	}
-	void clearAll() {
+	void clearAll()
+	{
 		resizeVertices(0);
 		resizeIndices(0);
 	}
@@ -50,5 +44,3 @@ public:
 	void setVertex(int vertIndex, const Vertex &v);
 	void pushBackVertex(const Vertex &v);
 };
-
-Vertex lerpVertex(Vertex vStart, Vertex vEnd, float t);

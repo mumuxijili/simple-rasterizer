@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "util.h"
 
+Vertex g_cube[8] = { Vertex(Vec4(100, 100, 100), ColorRed), Vertex(Vec4(200, 100, 100), ColorGreen), Vertex(Vec4(100, 200, 100), ColorBlue), Vertex(Vec4(200, 200, 100), ColorBlack),
+					Vertex(Vec4(100, 100, 0), ColorRed), Vertex(Vec4(200, 100, 0), ColorGreen), Vertex(Vec4(100, 200, 0), ColorBlue), Vertex(Vec4(200, 200, 0), ColorBlack) };
+
 DWORD RGBA(int r, int g, int b, int a)
 {
 	return ((b)+((g) << 8) + ((r) << 16) + ((a) << 24));
@@ -11,11 +14,18 @@ DWORD RGBA(Vec4 color)
 	return (((int)color.z * 255) + (((int)color.y * 255) << 8) + (((int)color.x * 255) << 16) + ((0) << 24));
 }
 
-void toRGB(DWORD rbg, int &r, int &g, int &b)
+void fromRGB(DWORD rbg, int &r, int &g, int &b)
 {
-	r = rbg >> 16 & 0xff;
-	g = rbg >> 8 & 0xff;
-	b = rbg & 0xff;
+	r = GetRValue(rbg);
+	g = GetGValue(rbg);
+	b = GetBValue(rbg);
+}
+
+void fromRGBQUAD(DWORD rbg, int &r, int &g, int &b)
+{
+	b = GetRValue(rbg);
+	g = GetGValue(rbg);
+	r = GetBValue(rbg);
 }
 
 float lerpFloat(float fStart, float fEnd, float t)
@@ -25,14 +35,17 @@ float lerpFloat(float fStart, float fEnd, float t)
 
 DWORD lerpColor(DWORD color1, DWORD color2, float t)
 {
+	if (color1 == color2)
+		return color1;
+
 	int r1, g1, b1, r2, g2, b2;
-	toRGB(color1, r1, g1, b1);
-	toRGB(color2, r2, g2, b2);
+	fromRGBQUAD(color1, r1, g1, b1);
+	fromRGBQUAD(color2, r2, g2, b2);
 
 	int r = (int)lerpFloat((float)r1, (float)r2, t);
 	int g = (int)lerpFloat((float)g1, (float)g2, t);
 	int b = (int)lerpFloat((float)b1, (float)b2, t);
-	return RGB(r, g, b);
+	return toRGBQUAD(r, g, b);
 }
 
 Vec4 lerpVector(Vec4 vStart, Vec4 vEnd, float t)
@@ -53,12 +66,81 @@ Vec4 lerpVector(Vec4 vStart, Vec4 vEnd, float t)
 	return Vec4(x, y, z, w);
 }
 
-void drawLabel(HDC hdc, LPCSTR str, int lineNum)
+Vertex lerpVertex(Vertex vStart, Vertex vEnd, float t)
+{
+	Vertex v;
+	v.m_vertexPos = lerpVector(vStart.m_vertexPos, vEnd.m_vertexPos, t);
+	v.m_SSCoord = lerpVector(vStart.m_SSCoord, vEnd.m_SSCoord, t);
+	v.m_vertexNorm = lerpVector(vStart.m_vertexNorm, vEnd.m_vertexNorm, t);
+	v.m_vertexColor = lerpColor(vStart.m_vertexColor, vEnd.m_vertexColor, t);
+
+	return v;
+}
+
+void swapBuffer(DWORD* frontBuffer, DWORD* backBuffer)
+{
+	size_t bufferSize = g_winWidth * g_winHeight * sizeof(DWORD);
+	memcpy_s(frontBuffer, bufferSize, backBuffer, bufferSize);
+}
+
+void drawFps(HDC hdc, LPCSTR str, int lineNum)
 {
 	//--draw text
-	SetTextColor(hdc, RGB(255, 255, 255));
-	SetBkMode(hdc, TRANSPARENT);
-	//char fpsstr[32];
-	//sprintf_s(fpsstr, "FPS: %d", fps);
-	TextOutA(hdc, 0, 17 * lineNum, str, (int)strlen(str));
+	SetTextColor(hdc, RGB(255, 0, 0));
+	SetBkMode(hdc, OPAQUE);
+	TextOutA(hdc, 5, 17 * lineNum, str, (int)strlen(str));
+}
+
+// world matrix is identity matrix, which means model doesn't move
+Mat4 model2WorldMatrix()
+{
+	Mat4 worldmatrix = Mat4(); // identity matrix
+	return worldmatrix;
+}
+
+// https://zhuanlan.zhihu.com/p/35943426
+Mat4 model2WorldMatrix(Vec4 o, Vec4 x, Vec4 y, Vec4 z)
+{
+	Mat4 worldmatrix = Mat4(); // identity matrix
+
+	x.w = y.w = z.w = 0;
+	worldmatrix.setCol(0, x);
+	worldmatrix.setCol(1, y);
+	worldmatrix.setCol(2, z);
+	o.w = 1;
+	worldmatrix.setCol(3, o);
+
+	return worldmatrix;
+}
+
+Mat4 world2ModelMatrix()
+{
+	Mat4 inverseworldmatrix = Mat4();
+	return inverseworldmatrix;
+}
+
+Mat4 world2ViewMatrix(Camera cam)
+{
+	Mat4 viewmatrix = Mat4();
+	Vec4 v = Vec4(0, 1, 0, 0);
+	Vec4 n = cam.direction();
+	Vec4 u = v.cross(n);
+	u.w = 0;
+	u.normalize();
+	v = n.cross(u);
+	v.w = 0;
+	v.normalize();
+	viewmatrix.setColValue(0, u);
+	viewmatrix.setColValue(1, v);
+	viewmatrix.setColValue(2, n);
+	float camx = -(cam.m_pos.dot(u));
+	float camy = -(cam.m_pos.dot(v));
+	float camz = -(cam.m_pos.dot(n));
+	viewmatrix.setRow(3, Vec4(camx, camy, camz, 1));
+	return viewmatrix;
+}
+
+Mat4 perspectiveProjectionMatrix(Camera cam)
+{
+	return Mat4();
 }

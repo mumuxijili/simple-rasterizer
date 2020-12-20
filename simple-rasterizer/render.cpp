@@ -3,64 +3,94 @@
 
 vector<Vertex> g_vVertexBuffer;
 vector<UINT> g_vIndexBuffer;
-Camera g_cam;
+Camera g_camera;
 
 void Render::initRender()
 {
-	m_renderMode = RenderMode::RM_WIREFRAME;
+	m_renderMode = RenderMode::RenderMode_WIREFRAME;
+	Vec4 cameraPos = Vec4(g_winWidth / 2, g_winHeight / 2, 1000.f);
+	Vec4 up = Vec4(0, 1, 0, 0);
+	//Vec4 target = Vec4(g_winWidth / 2, g_winHeight / 2, 0);
+	Vec4 target = Vec4(2, 2, 0);
+	g_camera = Camera(cameraPos, up, (cameraPos - target).normalize(), 0, 0, 0);
+	g_camera.setPerspective((float)M_PI * 0.25f, (float)g_winWidth / g_winHeight, 500.f, -200.f);
+	g_camera.updateMatrix();
+	for (int i = 0; i < 8; i++)
+		g_cube[i].m_SSCoord = g_camera.m_world2Projection.mulVec(g_cube[i].m_vertexPos);
 }
 
 DWORD* Render::draw()
 {
-	//
-	// something like: RenderScene();
-	//
-	SYSTEMTIME time = { 0 };
-	GetLocalTime(&time);
-	int blue = (int)((double)time.wMilliseconds / 1000 * 255);
-	for (int i = 0; i < g_winHeight; i++)
-		for (int j = 0; j < g_winWidth; j++)
-		{
-			int r, g, b;
-			r = (int)(((double)i / g_winHeight) * 255);
-			g = (int)(((double)j / g_winWidth) * 255);
-			//dwFrameBuffer[i * WinWidth + j] = RGBA(r, g, blue);
-			//dwFrameBuffer[i * WinWidth + j] = ColorBlack;
-			m_frameBuffer[i * g_winWidth + j] = RGB(r, g, blue);
-		}
-	drawLine(0, 0, 0, 719, ColorBlack);
-	drawLine(0, 0, 1279, 0, ColorBlack);
-	drawLine(0, 719, 1279, 719, ColorBlack);
-	drawLine(1279, 0, 1279, 719, ColorBlack);
+	//////////////////////////////////////////////////// set background ////////////////////////////////////////////////////
+	memset(m_frameBuffer, ColorWhite, g_winWidth * g_winHeight * sizeof(DWORD));
 
-	// Vertex should has screen space coordinate
-	Vertex v0, v1, v2;
-	v0.m_SSCoord = Vec4(100, 100, 100, 1);
-	v1.m_SSCoord = Vec4(500, 100, 100, 1);
-	v2.m_SSCoord = Vec4(100, 200, 100, 1);
-	v0.m_vertexNorm = Vec4(0.0, 0.0, 1.0, 0.0);
-	v1.m_vertexNorm = Vec4(0.0, 0.0, 1.0, 0.0);
-	v2.m_vertexNorm = Vec4(0.0, 0.0, 1.0, 0.0);
-	v0.m_vertexColor = ColorBLUE;
-	v1.m_vertexColor = ColorGREEN;
-	v2.m_vertexColor = ColorRED;
-	drawTrianglePlaneBottom(v2, v1, v0);
-	v0.m_SSCoord += Vec4(700, 0, 0, 0);
-	v1.m_SSCoord += Vec4(500, 100, 0, 0);
-	v2.m_SSCoord += Vec4(500, 0, 0, 0);
-	drawTrianglePlaneTop(v2, v1, v0);
-	v0.m_SSCoord += Vec4(-600, 200, 0, 0);
-	v1.m_SSCoord += Vec4(-500, 0, 0, 0);
-	v2.m_SSCoord += Vec4(-200, 300, 0, 0);
-	drawSolidTriangle(v0, v1, v2);
-	for (int i = 0; i < 10; i++)
-	{
-		v0.m_SSCoord += Vec4(25, 0, 0, 0);
-		v1.m_SSCoord += Vec4(25, 0, 0, 0);
-		v2.m_SSCoord += Vec4(25, 0, 0, 0);
-		drawSolidTriangle(v0, v1, v2);
-	}
-	//m_render->DrawTriangle(v0, v1, v2);
+	//SYSTEMTIME time = { 0 };
+	//GetLocalTime(&time);
+	//int blue = (int)((double)time.wMilliseconds / 1000 * 255);
+	//for (int i = 0; i < g_winHeight; i++)
+	//{
+	//	for (int j = 0; j < g_winWidth; j++)
+	//	{
+	//		int r, g;
+	//		r = (int)(((double)i / g_winHeight) * 255);
+	//		g = (int)(((double)j / g_winWidth) * 255);
+	//		m_frameBuffer[i * g_winWidth + j] = toRGBQUAD(r, g, blue);
+	//	}
+	//}
+
+	//////////////////////////////////////////////////// draw lines ////////////////////////////////////////////////////
+	drawLine(0, 0, 719, 719, ColorBlack);
+
+	// x-axis
+	drawLine(0, 10, 1279, 10, ColorRed);
+	drawLine(1269, 0, 1279, 10, ColorRed);
+	drawLine(1269, 20, 1279, 10, ColorRed);
+	// y-axis
+	drawLine(10, 0, 10, 719, ColorBlue);
+	drawLine(0, 709, 10, 719, ColorBlue);
+	drawLine(20, 709, 10, 719, ColorBlue);
+
+	////////////////////////////////////////////////////// draw triangles ////////////////////////////////////////////////////
+	//// Vertex should has screen space coordinate
+	//Vertex v0, v1, v2;
+	//v0.m_SSCoord = Vec4(100, 100, 100, 1);
+	//v1.m_SSCoord = Vec4(500, 100, 100, 1);
+	//v2.m_SSCoord = Vec4(100, 200, 100, 1);
+	////v0.m_vertexNorm = Vec4(0.0, 0.0, 1.0, 0.0);
+	////v1.m_vertexNorm = Vec4(0.0, 0.0, 1.0, 0.0);
+	////v2.m_vertexNorm = Vec4(0.0, 0.0, 1.0, 0.0);
+	//v0.m_vertexColor = ColorBlue;
+	//v1.m_vertexColor = ColorGreen;
+	//v2.m_vertexColor = ColorRed;
+	//drawTrianglePlaneBottom(v2, v1, v0);
+	//v0.m_SSCoord += Vec4(700, 0, 0, 0);
+	//v1.m_SSCoord += Vec4(500, 100, 0, 0);
+	//v2.m_SSCoord += Vec4(500, 0, 0, 0);
+	//drawTrianglePlaneTop(v2, v1, v0);
+	//v0.m_SSCoord += Vec4(-600, 200, 0, 0);
+	//v1.m_SSCoord += Vec4(-500, 0, 0, 0);
+	//v2.m_SSCoord += Vec4(-200, 300, 0, 0);
+	//drawFrameTriangle(v0, v1, v2);
+	//v0.m_SSCoord += Vec4(300, 0, 0, 0);
+	//v1.m_SSCoord += Vec4(300, 0, 0, 0);
+	//v2.m_SSCoord += Vec4(300, 0, 0, 0);
+	//drawSolidTriangle(v0, v1, v2);
+	////for (int i = 0; i < 10; i++)
+	////{
+	////	v0.m_SSCoord += Vec4(25, 0, 0, 0);
+	////	v1.m_SSCoord += Vec4(25, 0, 0, 0);
+	////	v2.m_SSCoord += Vec4(25, 0, 0, 0);
+	////	drawSolidTriangle(v0, v1, v2);
+	////}
+
+	//////////////////////////////////////////////////// draw cube ////////////////////////////////////////////////////
+	drawRect(g_cube[flt], g_cube[frt], g_cube[flb], g_cube[frb]); // front
+	drawRect(g_cube[blt], g_cube[flt], g_cube[blb], g_cube[flb]); // left
+	drawRect(g_cube[frt], g_cube[brt], g_cube[frb], g_cube[brb]); // right
+	drawRect(g_cube[blt], g_cube[brt], g_cube[flt], g_cube[frt]); // top
+	drawRect(g_cube[blb], g_cube[brb], g_cube[flb], g_cube[frb]); // bottom
+	//drawRect(g_cube[blt], g_cube[brt], g_cube[blb], g_cube[brb]); // back
+
 	return m_frameBuffer;
 }
 
@@ -149,13 +179,13 @@ void Render::drawScanLine(Vertex vLeft, Vertex vRight, int y)
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////////////////////////////////////!!Optimize Me: lerp costs too much////////////////////////////////////////
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//Vertex v;
-			//v = lerpVertex(vLeft, vRight, t);
-			DWORD color = lerpColor(vLeft.m_vertexColor, vRight.m_vertexColor, t);
-			//DWORD color = ColorBlack;
 			// depth test
 			if (1)
 			{
+				//Vertex v;
+				//v = lerpVertex(vLeft, vRight, t);
+				DWORD color = lerpColor(vLeft.m_vertexColor, vRight.m_vertexColor, t);
+				//DWORD color = ColorBlack;
 				drawPixel(x, y, color);
 			}
 		}
@@ -445,66 +475,29 @@ void Render::drawFrameTriangle(Vertex v0, Vertex v1, Vertex v2)
 	drawLine((int)v2.m_SSCoord.x, (int)v2.m_SSCoord.y, (int)v0.m_SSCoord.x, (int)v0.m_SSCoord.y, ColorBlack);
 }
 
-int Render::drawTriangle(Vertex v0, Vertex v1, Vertex v2)
+void Render::drawTriangle(Vertex v0, Vertex v1, Vertex v2)
 {
 	// Vertex should has screen space coordinate
 	// now assume (int)Vertex.m_SSCoord.xy is the screen space coordinate
-	if (m_renderMode == RenderMode::RM_SOLID)
+	if (m_renderMode == RenderMode_SOLID)
 	{
-
 		drawSolidTriangle(v0, v1, v2);
-		return 0;
 	}
-	else if (m_renderMode == RenderMode::RM_WIREFRAME)
+	else if (m_renderMode == RenderMode_WIREFRAME)
 	{
-
 		drawFrameTriangle(v0, v1, v2);
-		return 0;
 	}
-	else
-	{
-		return -1;
-	}
-	return 0;
 }
 
-// world matrix is identity matrix, which means model doesn't move
-Mat4 Render::model2WorldMatrix()
+void Render::drawTriangle(Triangle triangle)
 {
-	Mat4 worldmatrix = Mat4(); // identity matrix
-	return worldmatrix;
+	drawTriangle(triangle.v0, triangle.v1, triangle.v2);
 }
 
-Mat4 Render::world2ModelMatrix()
+void Render::drawRect(Vertex lt, Vertex rt, Vertex lb, Vertex rb)
 {
-	Mat4 inverseworldmatrix = Mat4();
-	return inverseworldmatrix;
-}
-
-Mat4 Render::world2ViewMatrix(Camera cam)
-{
-	Mat4 viewmatrix = Mat4();
-	Vec4 v = Vec4(0, 1, 0, 0);
-	Vec4 n = cam.m_Dir.normalize();
-	Vec4 u = v.cross(n);
-	u.w = 0;
-	u.normalize();
-	v = n.cross(u);
-	v.w = 0;
-	v.normalize();
-	viewmatrix.setCol(0, u);
-	viewmatrix.setCol(1, v);
-	viewmatrix.setCol(2, n);
-	float camx = -(cam.m_Pos.dot(u));
-	float camy = -(cam.m_Pos.dot(v));
-	float camz = -(cam.m_Pos.dot(n));
-	viewmatrix.setRow(3, Vec4(camx, camy, camz, 1));
-	return viewmatrix;
-}
-
-Mat4 Render::perspectiveProjectionMatrix(Camera cam)
-{
-	return Mat4();
+	drawTriangle(lt, rt, rb);
+	drawTriangle(lt, rb, lb);
 }
 
 void Render::renderPipeline()

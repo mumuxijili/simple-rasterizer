@@ -34,14 +34,3 @@ void Mesh::pushBackVertex(const Vertex &v)
 	m_vMeshNorms.push_back(v.m_vertexNorm);
 	m_vMeshColors.push_back(v.m_vertexColor);
 }
-
-Vertex lerpVertex(Vertex vStart, Vertex vEnd, float t)
-{
-	Vertex v;
-	v.m_vertexPos = lerpVector(vStart.m_vertexPos, vEnd.m_vertexPos, t);
-	v.m_SSCoord = lerpVector(vStart.m_SSCoord, vEnd.m_SSCoord, t);
-	v.m_vertexNorm = lerpVector(vStart.m_vertexNorm, vEnd.m_vertexNorm, t);
-	v.m_vertexColor = lerpColor(vStart.m_vertexColor, vEnd.m_vertexColor, t);
-
-	return v;
-}

@@ -1,4 +1,5 @@
 #pragma once
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <vector>
 using namespace std;
@@ -254,8 +255,12 @@ public:
 
 	Mat4 transpose(const Mat4 &mat);
 	void setZero();
+	void setColValue(int c, Vec4 col);
+
 	Vec4 col(int c) const;
 	void setCol(int c, Vec4 col);
 	Vec4 row(int r) const;
 	void setRow(int r, Vec4 row);
+
+	Vec4 mulVec(Vec4 v);
 };
