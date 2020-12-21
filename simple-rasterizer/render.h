@@ -35,11 +35,12 @@ public:
 	void drawTriangle(Vertex v0, Vertex v1, Vertex v2);
 	void drawTriangle(Triangle triangle);
 
-	void drawRect(Vertex lt, Vertex rt, Vertex lb, Vertex rb);
+	void drawRect(Vertex lt, Vertex rt, Vertex rb, Vertex lb);
 
 	void renderPipeline();
 
 private:
 	RenderMode m_renderMode;
 	DWORD m_frameBuffer[g_winWidth * g_winHeight];
+	float m_zBuffer[g_winWidth * g_winHeight];
 };

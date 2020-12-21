@@ -5,7 +5,7 @@
 
 enum CubeVertex
 {
-	flt, frt, flb, frb, blt, brt, blb, brb
+	flt, frt, frb, flb, blt, brt, brb, blb
 };
 // front-left-top, frt, flb, frb, blt, brt, blb, brb
 extern Vertex g_cube[];
@@ -68,3 +68,5 @@ Mat4 world2ViewMatrix(Camera cam);
 Mat4 perspectiveProjectionMatrix(Camera cam);
 //Mat4 orthoProjectionMatrix();
 Mat4 perspective2ScreenMatrix();
+void perspectiveDivede(Vec4& v);
+void transformScreen(Vec4& v);

@@ -15,7 +15,7 @@ public:
 		m_near = fnear;
 		m_far = ffar;
 
-		updateMatrix();
+		//updateMatrix();
 	}
 
 	void setPosition(Vec4 pos) { m_pos = pos; }
@@ -51,10 +51,10 @@ public:
 		n.w = -m_pos.dot(m_n);
 		Vec4 w = Vec4(0.f, 0.f, 0.f, 1.f);
 		m_world2View = Mat4();
-		m_world2View.setCol(0, u);
-		m_world2View.setCol(1, v);
-		m_world2View.setCol(2, n);
-		m_world2View.setCol(3, w);
+		m_world2View.setRow(0, u);
+		m_world2View.setRow(1, v);
+		m_world2View.setRow(2, n);
+		m_world2View.setRow(3, w);
 
 		float f = 1.f / (float)tan(m_fov * 0.5f);
 		m_view2Projection = Mat4(f / m_aspect, 0.f, 0.f, 0.f,
@@ -62,17 +62,18 @@ public:
 			0.f, 0.f, m_far / (m_far - m_near), 1.f,
 			0.f, 0.f, -m_near * m_far / (m_far - m_near), 0.f);
 
-		m_world2Projection = m_world2View * m_view2Projection;
+		m_world2Projection = m_view2Projection * m_world2View;
 	}
 
 	Vec4 m_pos; // camera position(world space)
 
 
+	//      ^
 	//      |v up
 	//      |
-	//      |
-	//  <---/------- target
-	//     /         n
+	// n    |
+	//  <---/- - - - target
+	//     /
 	//    /u
 	Vec4 m_dir; // look at direction
 	Vec4 m_up;

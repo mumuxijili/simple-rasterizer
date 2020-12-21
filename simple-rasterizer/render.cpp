@@ -7,23 +7,30 @@ Camera g_camera;
 
 void Render::initRender()
 {
-	m_renderMode = RenderMode::RenderMode_WIREFRAME;
-	Vec4 cameraPos = Vec4(g_winWidth / 2, g_winHeight / 2, 1000.f);
+	for (int i = 0; i < g_winWidth * g_winHeight; i++)
+		m_zBuffer[i] = -FLT_MAX;
+	m_renderMode = RenderMode::RenderMode_SOLID;
+	Vec4 cameraPos = Vec4(5.f, 5.f, 5.f, 1.f);
 	Vec4 up = Vec4(0, 1, 0, 0);
 	//Vec4 target = Vec4(g_winWidth / 2, g_winHeight / 2, 0);
-	Vec4 target = Vec4(2, 2, 0);
+	Vec4 target = Vec4(0, 0, 0, 1.f);
 	g_camera = Camera(cameraPos, up, (cameraPos - target).normalize(), 0, 0, 0);
-	g_camera.setPerspective((float)M_PI * 0.25f, (float)g_winWidth / g_winHeight, 500.f, -200.f);
+	g_camera.setPerspective((float)M_PI * 0.25f, (float)g_winWidth / g_winHeight, 1.f, -10.f);
 	g_camera.updateMatrix();
 	for (int i = 0; i < 8; i++)
+	{
 		g_cube[i].m_SSCoord = g_camera.m_world2Projection.mulVec(g_cube[i].m_vertexPos);
+		perspectiveDivede(g_cube[i].m_SSCoord);
+		transformScreen(g_cube[i].m_SSCoord);
+	}
 }
 
 DWORD* Render::draw()
 {
 	//////////////////////////////////////////////////// set background ////////////////////////////////////////////////////
 	memset(m_frameBuffer, ColorWhite, g_winWidth * g_winHeight * sizeof(DWORD));
-
+	for (int i = 0; i < g_winWidth * g_winHeight; i++)
+		m_zBuffer[i] = -FLT_MAX;
 	//SYSTEMTIME time = { 0 };
 	//GetLocalTime(&time);
 	//int blue = (int)((double)time.wMilliseconds / 1000 * 255);
@@ -39,7 +46,7 @@ DWORD* Render::draw()
 	//}
 
 	//////////////////////////////////////////////////// draw lines ////////////////////////////////////////////////////
-	drawLine(0, 0, 719, 719, ColorBlack);
+	//drawLine(0, 0, 719, 719, ColorBlack);
 
 	// x-axis
 	drawLine(0, 10, 1279, 10, ColorRed);
@@ -84,12 +91,12 @@ DWORD* Render::draw()
 	////}
 
 	//////////////////////////////////////////////////// draw cube ////////////////////////////////////////////////////
-	drawRect(g_cube[flt], g_cube[frt], g_cube[flb], g_cube[frb]); // front
-	drawRect(g_cube[blt], g_cube[flt], g_cube[blb], g_cube[flb]); // left
-	drawRect(g_cube[frt], g_cube[brt], g_cube[frb], g_cube[brb]); // right
-	drawRect(g_cube[blt], g_cube[brt], g_cube[flt], g_cube[frt]); // top
-	drawRect(g_cube[blb], g_cube[brb], g_cube[flb], g_cube[frb]); // bottom
-	//drawRect(g_cube[blt], g_cube[brt], g_cube[blb], g_cube[brb]); // back
+	drawRect(g_cube[flt], g_cube[frt], g_cube[frb], g_cube[flb]); // front
+	drawRect(g_cube[blt], g_cube[flt], g_cube[flb], g_cube[blb]); // left
+	drawRect(g_cube[frt], g_cube[brt], g_cube[brb], g_cube[frb]); // right
+	drawRect(g_cube[blt], g_cube[brt], g_cube[frt], g_cube[flt]); // top
+	drawRect(g_cube[blb], g_cube[brb], g_cube[frb], g_cube[flb]); // bottom
+	drawRect(g_cube[blt], g_cube[brt], g_cube[brb], g_cube[blb]); // back
 
 	return m_frameBuffer;
 }
@@ -180,13 +187,15 @@ void Render::drawScanLine(Vertex vLeft, Vertex vRight, int y)
 			////////////////////////////////////!!Optimize Me: lerp costs too much////////////////////////////////////////
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// depth test
-			if (1)
+			float z = lerpFloat(vLeft.m_SSCoord.z, vRight.m_SSCoord.z, t);
+			if (z > m_zBuffer[y * g_winWidth + x])
 			{
 				//Vertex v;
 				//v = lerpVertex(vLeft, vRight, t);
 				DWORD color = lerpColor(vLeft.m_vertexColor, vRight.m_vertexColor, t);
 				//DWORD color = ColorBlack;
 				drawPixel(x, y, color);
+				m_zBuffer[y * g_winWidth + x] = z;
 			}
 		}
 		if (x < 0 || x >= g_winWidth)
@@ -494,7 +503,7 @@ void Render::drawTriangle(Triangle triangle)
 	drawTriangle(triangle.v0, triangle.v1, triangle.v2);
 }
 
-void Render::drawRect(Vertex lt, Vertex rt, Vertex lb, Vertex rb)
+void Render::drawRect(Vertex lt, Vertex rt, Vertex rb, Vertex lb)
 {
 	drawTriangle(lt, rt, rb);
 	drawTriangle(lt, rb, lb);

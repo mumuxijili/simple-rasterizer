@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "util.h"
 
-Vertex g_cube[8] = { Vertex(Vec4(100, 100, 100), ColorRed), Vertex(Vec4(200, 100, 100), ColorGreen), Vertex(Vec4(100, 200, 100), ColorBlue), Vertex(Vec4(200, 200, 100), ColorBlack),
-					Vertex(Vec4(100, 100, 0), ColorRed), Vertex(Vec4(200, 100, 0), ColorGreen), Vertex(Vec4(100, 200, 0), ColorBlue), Vertex(Vec4(200, 200, 0), ColorBlack) };
+//Vertex g_cube[8] = { Vertex(Vec4(100, 100, 100, 1), ColorRed), Vertex(Vec4(200, 100, 100, 1), ColorGreen), Vertex(Vec4(100, 200, 100, 1), ColorBlue), Vertex(Vec4(200, 200, 100, 1), ColorBlack),
+//					Vertex(Vec4(100, 100, 0, 1), ColorRed), Vertex(Vec4(200, 100, 0, 1), ColorGreen), Vertex(Vec4(100, 200, 0, 1), ColorBlue), Vertex(Vec4(200, 200, 0, 1), ColorBlack) };
+Vertex g_cube[8] = { Vertex(Vec4(-1, 1, 1, 1), ColorRed), Vertex(Vec4(1, 1, 1, 1), ColorGreen), Vertex(Vec4(1, -1, 1, 1), ColorBlue), Vertex(Vec4(-1, -1, 1, 1), ColorBlack),
+					Vertex(Vec4(-1, 1, -1, 1), ColorRed), Vertex(Vec4(1, 1, -1, 1), ColorGreen), Vertex(Vec4(1, -1, -1, 1), ColorBlue), Vertex(Vec4(-1, -1, -1, 1), ColorBlack) };
 
 DWORD RGBA(int r, int g, int b, int a)
 {
@@ -143,4 +145,20 @@ Mat4 world2ViewMatrix(Camera cam)
 Mat4 perspectiveProjectionMatrix(Camera cam)
 {
 	return Mat4();
+}
+
+// 透视除法 齐次除法
+void perspectiveDivede(Vec4& v)
+{
+	v.x /= v.w;
+	v.y /= v.w;
+	v.z /= v.w;
+	v.w = 1.0f;
+}
+
+// 转换到屏幕坐标
+void transformScreen(Vec4& v)
+{
+	v.x = (v.x + 1.0f) * g_winWidth * 0.5f;
+	v.y = (v.y + 1.0f) * g_winHeight * 0.5f;
 }

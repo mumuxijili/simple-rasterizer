@@ -24,5 +24,3 @@
 
 static const int g_winWidth = 1280;
 static const int g_winHeight = 720;
-
-extern float g_zBuffer[];
