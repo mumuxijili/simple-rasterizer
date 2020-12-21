@@ -13,9 +13,9 @@ Vertex Mesh::getVertex(int vertIndex)
 	assert(vertIndex < (int)m_vMeshPoses.size());
 
 	Vertex v;
-	v.m_vertexPos = m_vMeshPoses[vertIndex];
-	v.m_vertexNorm = m_vMeshNorms[vertIndex];
-	v.m_vertexColor = m_vMeshColors[vertIndex];
+	v.m_pos = m_vMeshPoses[vertIndex];
+	v.m_normal = m_vMeshNorms[vertIndex];
+	v.m_color = m_vMeshColors[vertIndex];
 	return v;
 }
 
@@ -23,14 +23,14 @@ void Mesh::setVertex(int vertIndex, const Vertex &v)
 {
 	assert(vertIndex < (int)m_vMeshPoses.size());
 
-	m_vMeshPoses[vertIndex] = v.m_vertexPos;
-	m_vMeshNorms[vertIndex] = v.m_vertexNorm;
-	m_vMeshColors[vertIndex] = v.m_vertexColor;
+	m_vMeshPoses[vertIndex] = v.m_pos;
+	m_vMeshNorms[vertIndex] = v.m_normal;
+	m_vMeshColors[vertIndex] = v.m_color;
 }
 
 void Mesh::pushBackVertex(const Vertex &v)
 {
-	m_vMeshPoses.push_back(v.m_vertexPos);
-	m_vMeshNorms.push_back(v.m_vertexNorm);
-	m_vMeshColors.push_back(v.m_vertexColor);
+	m_vMeshPoses.push_back(v.m_pos);
+	m_vMeshNorms.push_back(v.m_normal);
+	m_vMeshColors.push_back(v.m_color);
 }

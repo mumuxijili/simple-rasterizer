@@ -50,17 +50,27 @@ public:
 		Vec4 n = m_n;
 		n.w = -m_pos.dot(m_n);
 		Vec4 w = Vec4(0.f, 0.f, 0.f, 1.f);
+		// https://www.cnblogs.com/wbaoqing/p/5422974.html
 		m_world2View = Mat4();
 		m_world2View.setRow(0, u);
 		m_world2View.setRow(1, v);
 		m_world2View.setRow(2, n);
 		m_world2View.setRow(3, w);
 
+		// https://zhuanlan.zhihu.com/p/152280876
+		// https://www.cnblogs.com/bluebean/p/5276111.html
 		float f = 1.f / (float)tan(m_fov * 0.5f);
-		m_view2Projection = Mat4(f / m_aspect, 0.f, 0.f, 0.f,
+		//m_view2Projection = Mat4(
+		//	f / m_aspect, 0.f, 0.f, 0.f,
+		//	0.f, f, 0.f, 0.f,
+		//	0.f, 0.f, m_far / (m_far - m_near), 1.f,
+		//	0.f, 0.f, -m_near * m_far / (m_far - m_near), 0.f);
+
+		m_view2Projection = Mat4(
+			f / m_aspect, 0.f, 0.f, 0.f,
 			0.f, f, 0.f, 0.f,
-			0.f, 0.f, m_far / (m_far - m_near), 1.f,
-			0.f, 0.f, -m_near * m_far / (m_far - m_near), 0.f);
+			0.f, 0.f, (m_far + m_near) / (m_far - m_near), 2.f * m_near * m_far / (m_far - m_near),
+			0.f, 0.f, -1.f, 0.f);
 
 		m_world2Projection = m_view2Projection * m_world2View;
 	}

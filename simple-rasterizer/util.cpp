@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "util.h"
 
-//Vertex g_cube[8] = { Vertex(Vec4(100, 100, 100, 1), ColorRed), Vertex(Vec4(200, 100, 100, 1), ColorGreen), Vertex(Vec4(100, 200, 100, 1), ColorBlue), Vertex(Vec4(200, 200, 100, 1), ColorBlack),
-//					Vertex(Vec4(100, 100, 0, 1), ColorRed), Vertex(Vec4(200, 100, 0, 1), ColorGreen), Vertex(Vec4(100, 200, 0, 1), ColorBlue), Vertex(Vec4(200, 200, 0, 1), ColorBlack) };
 Vertex g_cube[8] = { Vertex(Vec4(-1, 1, 1, 1), ColorRed), Vertex(Vec4(1, 1, 1, 1), ColorGreen), Vertex(Vec4(1, -1, 1, 1), ColorBlue), Vertex(Vec4(-1, -1, 1, 1), ColorBlack),
 					Vertex(Vec4(-1, 1, -1, 1), ColorRed), Vertex(Vec4(1, 1, -1, 1), ColorGreen), Vertex(Vec4(1, -1, -1, 1), ColorBlue), Vertex(Vec4(-1, -1, -1, 1), ColorBlack) };
 
@@ -71,10 +69,10 @@ Vec4 lerpVector(Vec4 vStart, Vec4 vEnd, float t)
 Vertex lerpVertex(Vertex vStart, Vertex vEnd, float t)
 {
 	Vertex v;
-	v.m_vertexPos = lerpVector(vStart.m_vertexPos, vEnd.m_vertexPos, t);
+	v.m_pos = lerpVector(vStart.m_pos, vEnd.m_pos, t);
 	v.m_SSCoord = lerpVector(vStart.m_SSCoord, vEnd.m_SSCoord, t);
-	v.m_vertexNorm = lerpVector(vStart.m_vertexNorm, vEnd.m_vertexNorm, t);
-	v.m_vertexColor = lerpColor(vStart.m_vertexColor, vEnd.m_vertexColor, t);
+	//v.m_normal = lerpVector(vStart.m_normal, vEnd.m_normal, t);
+	v.m_color = lerpColor(vStart.m_color, vEnd.m_color, t);
 
 	return v;
 }

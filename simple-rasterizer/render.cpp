@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "render.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 vector<Vertex> g_vVertexBuffer;
 vector<UINT> g_vIndexBuffer;
@@ -12,14 +15,13 @@ void Render::initRender()
 	m_renderMode = RenderMode::RenderMode_SOLID;
 	Vec4 cameraPos = Vec4(5.f, 5.f, 5.f, 1.f);
 	Vec4 up = Vec4(0, 1, 0, 0);
-	//Vec4 target = Vec4(g_winWidth / 2, g_winHeight / 2, 0);
 	Vec4 target = Vec4(0, 0, 0, 1.f);
 	g_camera = Camera(cameraPos, up, (cameraPos - target).normalize(), 0, 0, 0);
 	g_camera.setPerspective((float)M_PI * 0.25f, (float)g_winWidth / g_winHeight, 1.f, -10.f);
 	g_camera.updateMatrix();
 	for (int i = 0; i < 8; i++)
 	{
-		g_cube[i].m_SSCoord = g_camera.m_world2Projection.mulVec(g_cube[i].m_vertexPos);
+		g_cube[i].m_SSCoord = g_camera.m_world2Projection.mulVec(g_cube[i].m_pos);
 		perspectiveDivede(g_cube[i].m_SSCoord);
 		transformScreen(g_cube[i].m_SSCoord);
 	}
@@ -28,9 +30,11 @@ void Render::initRender()
 DWORD* Render::draw()
 {
 	//////////////////////////////////////////////////// set background ////////////////////////////////////////////////////
-	memset(m_frameBuffer, ColorWhite, g_winWidth * g_winHeight * sizeof(DWORD));
 	for (int i = 0; i < g_winWidth * g_winHeight; i++)
+	{
+		m_frameBuffer[i] = ColorBlack;
 		m_zBuffer[i] = -FLT_MAX;
+	}
 	//SYSTEMTIME time = { 0 };
 	//GetLocalTime(&time);
 	//int blue = (int)((double)time.wMilliseconds / 1000 * 255);
@@ -91,6 +95,26 @@ DWORD* Render::draw()
 	////}
 
 	//////////////////////////////////////////////////// draw cube ////////////////////////////////////////////////////
+	static milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+	milliseconds newMs = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+	if ((newMs - ms > (milliseconds)17))
+	{
+		float a = (float)M_PI / 100.f;
+		Mat4 rotate = Mat4(
+			cos(a), 0.0f, -sin(a), 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			sin(a), 0.0f, cos(a), 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f);
+		for (int i = 0; i < 8; i++)
+		{
+			g_cube[i].m_pos = rotate.mulVec(g_cube[i].m_pos);
+			g_cube[i].m_SSCoord = g_camera.m_world2Projection.mulVec(g_cube[i].m_pos);
+			perspectiveDivede(g_cube[i].m_SSCoord);
+			transformScreen(g_cube[i].m_SSCoord);
+		}
+		ms = newMs;
+	}
+
 	drawRect(g_cube[flt], g_cube[frt], g_cube[frb], g_cube[flb]); // front
 	drawRect(g_cube[blt], g_cube[flt], g_cube[flb], g_cube[blb]); // left
 	drawRect(g_cube[frt], g_cube[brt], g_cube[brb], g_cube[frb]); // right
@@ -174,13 +198,17 @@ void Render::drawScanLine(Vertex vLeft, Vertex vRight, int y)
 
 	for (int x = iLeftX; x <= iRightX; x++)
 	{
+		float dx = rightX - leftX;
 		if (x >= 0 && x < g_winWidth)
 		{
-			float dx = rightX - leftX;
 			float t = 0.0f;
 			if ((dx < -EPSINON) || (dx > EPSINON))
 			{
 				t = (x - leftX) / dx;
+				if (t < 0.f)
+					t = 0.f;
+				else if (t > 1.f)
+					t = 1.f;
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,7 +220,7 @@ void Render::drawScanLine(Vertex vLeft, Vertex vRight, int y)
 			{
 				//Vertex v;
 				//v = lerpVertex(vLeft, vRight, t);
-				DWORD color = lerpColor(vLeft.m_vertexColor, vRight.m_vertexColor, t);
+				DWORD color = lerpColor(vLeft.m_color, vRight.m_color, t);
 				//DWORD color = ColorBlack;
 				drawPixel(x, y, color);
 				m_zBuffer[y * g_winWidth + x] = z;
